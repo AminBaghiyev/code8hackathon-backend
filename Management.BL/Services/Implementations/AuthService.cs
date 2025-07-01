@@ -52,7 +52,7 @@ public class AuthService : IAuthService
             new Claim(ClaimTypes.Email, user.Email)
         ];
 
-        string accessToken = _service.GenerateToken(TimeSpan.FromMinutes(15), claims);
+        string accessToken = _service.GenerateToken(TimeSpan.FromHours(1), claims);
         string refreshToken = _service.GenerateToken(TimeSpan.FromDays(7), [new Claim(ClaimTypes.Email, user.Email)]);
 
         _httpContextAccessor.HttpContext?.Response.Cookies.Append("refresh_token", refreshToken, new CookieOptions
@@ -68,7 +68,7 @@ public class AuthService : IAuthService
             HttpOnly = true,
             Secure = true,
             SameSite = SameSiteMode.Strict,
-            Expires = DateTime.UtcNow.AddMinutes(15)
+            Expires = DateTime.UtcNow.AddHours(1)
         });
 
         string token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -103,7 +103,7 @@ public class AuthService : IAuthService
             new Claim(ClaimTypes.Email, user.Email)
         ];
 
-        string accessToken = _service.GenerateToken(TimeSpan.FromMinutes(15), claims);
+        string accessToken = _service.GenerateToken(TimeSpan.FromHours(1), claims);
         string refreshToken = _service.GenerateToken(TimeSpan.FromDays(7), [new Claim(ClaimTypes.Email, user.Email)]);
 
         _httpContextAccessor.HttpContext?.Response.Cookies.Append("refresh_token", refreshToken, new CookieOptions
@@ -119,7 +119,7 @@ public class AuthService : IAuthService
             HttpOnly = true,
             Secure = true,
             SameSite = SameSiteMode.Strict,
-            Expires = DateTime.UtcNow.AddMinutes(15)
+            Expires = DateTime.UtcNow.AddHours(1)
         });
 
         return new
@@ -220,7 +220,7 @@ public class AuthService : IAuthService
             new Claim(ClaimTypes.Email, user.Email)
         ];
 
-        string accessToken = _service.GenerateToken(TimeSpan.FromMinutes(15), claims);
+        string accessToken = _service.GenerateToken(TimeSpan.FromHours(1), claims);
         string refreshToken = _service.GenerateToken(TimeSpan.FromDays(7), [new Claim(ClaimTypes.Email, user.Email)]);
 
         _httpContextAccessor.HttpContext?.Response.Cookies.Append("refresh_token", refreshToken, new CookieOptions
@@ -236,7 +236,7 @@ public class AuthService : IAuthService
             HttpOnly = true,
             Secure = true,
             SameSite = SameSiteMode.Strict,
-            Expires = DateTime.UtcNow.AddMinutes(15)
+            Expires = DateTime.UtcNow.AddHours(1)
         });
     }
 
