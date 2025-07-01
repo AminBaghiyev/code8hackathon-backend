@@ -2,8 +2,8 @@
 using Management.BL.DTOs;
 using Management.BL.Services.Abstractions;
 using Management.Core.Entities;
+using Management.Core.Enums;
 using Management.DL.Repositories.Abstractions;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace Management.BL.Services.Implementations;
@@ -11,18 +11,27 @@ namespace Management.BL.Services.Implementations;
 public class RoomService : IRoomService
 {
     readonly IRepository<Room> _repository;
-
     readonly IMapper _mapper;
+
     public RoomService(IRepository<Room> repository, IMapper mapper)
     {
         _repository = repository;
         _mapper = mapper;
     }
 
+    public async Task ChangeRoomStatusAsync(int id, RoomStatus status)
+    {
+        Room? room = await _repository.GetOneAsync(item => item.Id == id);
+        if (room is null) throw new Exception("Room not found.");
+        if (room.Status == status) throw new Exception($"Status is already {status}");
+
+        room.Status = status;
+        _repository.Update(room);
+    }
+
     public async Task CreateAsync(RoomCreateDTO dto)
     {
         Room? room = await _repository.GetOneAsync(item => item.Number == dto.Number);
-
         if (room is not null) throw new Exception($"{dto.Number} is existed");
 
         Room newRoom = _mapper.Map<Room>(dto);
@@ -30,7 +39,7 @@ public class RoomService : IRoomService
         await _repository.CreateAsync(newRoom);
     }
 
-    public async Task UpdateAsync(RoomUpdateDTO dto, int id)
+    public async Task UpdateAsync(RoomUpdateDTO dto)
     {
         Room? room = await _repository.GetOneAsync(item => item.Id == dto.Id);
         if (room is null) throw new Exception("Room not found.");
@@ -43,18 +52,6 @@ public class RoomService : IRoomService
     {
         Room room = await _repository.GetOneAsync(item => item.Id == id) ?? throw new Exception("Room not found.");
         _repository.Delete(room);
-    }
-
-    public async Task<Room> GetByIdAsync(int id)
-    {
-        Room? room = await _repository.GetOneAsync(item => item.Id == id, includes: e => e.Include(item => item.Reservations));
-
-        if (room is null)
-        {
-            throw new Exception("Room not found.");
-        }
-
-        return room;
     }
 
     public async Task<RoomUpdateDTO> GetByIdForUpdateAsync(int id)
@@ -70,37 +67,31 @@ public class RoomService : IRoomService
 
     public async Task<ICollection<RoomListDTO>> GetListItemsAsync(int page = 0, int count = 0)
     {
-        ICollection<Room> rooms = await _repository.GetAllAsync(item=>item.Status == Core.Enums.RoomStatus.Full ,page: page,count: count,orderAsc: true
-        );
+        ICollection<Room> rooms = await _repository.GetAllAsync(item => item.Status == RoomStatus.Empty , page, count);
 
-        ICollection<RoomListDTO> listDtos = _mapper.Map<ICollection<RoomListDTO>>(rooms);
-        return listDtos;
+        return _mapper.Map<ICollection<RoomListDTO>>(rooms);
     }
 
-    public async Task<ICollection<RoomTableDTO>> GetTableItemsAsync(string q = null, int page = 0, int count = 10)
+    public async Task<ICollection<RoomTableDTO>> GetTableItemsAsync(RoomStatus? status = null, RoomType? type = null, string? q = null, int page = 0, int count = 10)
     {
-        var rooms = await _repository.GetAllAsync();
-        var query = rooms.AsQueryable();
+        IQueryable<Room> query = _repository.Table.AsQueryable();
 
-        if (!string.IsNullOrEmpty(q))
+        if (!string.IsNullOrWhiteSpace(q))
         {
             string normalizedQ = q.Trim().ToLower();
-
-            query = query.Where(r => r.Number.ToString().Contains(normalizedQ) || r.Type.ToString().ToLower().Contains(normalizedQ));
+            query = query.Where(r => r.Number.ToString().Contains(normalizedQ));
         }
 
-        query = query.Skip(page * count).Take(count);
+        if (status.HasValue) query = query.Where(r => r.Status == status.Value);
+        if (type.HasValue) query = query.Where(r => r.Type == type.Value);
 
-        var list = query.ToList();
+        if (count > 0) query = query.Skip(page * count).Take(count);
 
-        var dtos = _mapper.Map<ICollection<RoomTableDTO>>(list);
-
-        return dtos;
+        return _mapper.Map<ICollection<RoomTableDTO>>(await query.ToListAsync());
     }
 
-    public Task<int> SaveChangesAsync()
+    public async Task<int> SaveChangesAsync()
     {
-        return _repository.SaveChangesAsync();
-        throw new NotImplementedException();
+        return await _repository.SaveChangesAsync();
     }
 }

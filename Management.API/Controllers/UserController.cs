@@ -1,9 +1,11 @@
 ﻿using Management.BL.DTOs;
 using Management.BL.Services.Abstractions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Management.API.Controllers;
 
+[Authorize(Roles = "Admin")]
 [Route("api/[controller]")]
 [ApiController]
 public class UserController : ControllerBase

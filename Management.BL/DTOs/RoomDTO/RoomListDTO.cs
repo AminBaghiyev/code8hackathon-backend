@@ -1,8 +1,6 @@
-﻿using FluentValidation;
+﻿namespace Management.BL.DTOs;
 
-namespace Management.BL.DTOs;
-
-public record class RoomListDTO
+public record RoomListDTO
 {
     public int Id { get; set; }
     public int Number { get; set; }
