@@ -19,7 +19,8 @@ public static class ConfigurationServices
 
         services.AddScoped<EmailService>();
         services.AddSingleton<JWTService>();
-      
+
+        services.AddScoped<IReservationService, ReservationService>();
         services.AddScoped<IRoomService, RoomService>();
         services.AddScoped<IAuthService, AuthService>();
     }
