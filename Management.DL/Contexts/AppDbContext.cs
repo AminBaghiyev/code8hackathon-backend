@@ -31,9 +31,11 @@ public class AppDbContext : IdentityDbContext<AppUser, IdentityRole, string>
             Id = "767b9ec5-6a12-4ee8-9169-dfa0ef38eaab",
             FullName = "Admin",
             Email = "baghiyev.amin@gmail.com",
+            NormalizedEmail = "BAGHIYEV.AMIN@GMAIL.COM",
             PhoneNumber = "+994708143593",
             UserName = "admin",
             NormalizedUserName = "ADMIN",
+            EmailConfirmed = true
         };
 
         PasswordHasher<AppUser> hasher = new();
