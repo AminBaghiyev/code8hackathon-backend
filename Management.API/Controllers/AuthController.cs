@@ -2,6 +2,7 @@
 using Management.BL.Services.Abstractions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Management.API.Controllers;
 
@@ -22,7 +23,11 @@ public class AuthController : ControllerBase
     {
         try
         {
-            return StatusCode(StatusCodes.Status200OK, User.Claims.Select(claim => new { claim.Type, claim.Value }).ToList());
+            return StatusCode(StatusCodes.Status200OK, new
+            {
+                name = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.GivenName)?.Value,
+                role = User.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Role)?.Value
+            });
         }
         catch (Exception ex)
         {
@@ -67,6 +72,49 @@ public class AuthController : ControllerBase
         try
         {
             return StatusCode(StatusCodes.Status200OK, await _service.LoginAsync(loginDTO));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new
+            {
+                errors = new Dictionary<string, string[]>
+                {
+                    {
+                        "Error", new[] { ex.Message }
+                    }
+                }
+            });
+        }
+    }
+
+    [HttpGet("update-profile")]
+    public async Task<IActionResult> GetUpdateProfile()
+    {
+        try
+        {
+            return StatusCode(StatusCodes.Status200OK, await _service.GetUpdateProfileAsync());
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new
+            {
+                errors = new Dictionary<string, string[]>
+                {
+                    {
+                        "Error", new[] { ex.Message }
+                    }
+                }
+            });
+        }
+    }
+
+    [HttpPut("update-profile")]
+    public async Task<IActionResult> UpdateProfile([FromBody] ProfileUpdateDTO dto)
+    {
+        try
+        {
+            await _service.UpdateProfileAsync(dto);
+            return StatusCode(StatusCodes.Status200OK);
         }
         catch (Exception ex)
         {

@@ -9,5 +9,6 @@ public class AuthProfile : Profile
     {
         CreateMap<LoginDTO, AppUser>();
         CreateMap<RegisterDTO, AppUser>();
+        CreateMap<ProfileUpdateDTO, AppUser>().ReverseMap();
     }
 }
