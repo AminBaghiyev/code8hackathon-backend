@@ -10,4 +10,5 @@ public class Reservation : BaseEntity
     public Room Room { get; set; }
     public DateTime CheckInDate { get; set; }
     public DateTime CheckOutDate { get; set; }
+    public ICollection<Service> Services { get; set; }
 }
