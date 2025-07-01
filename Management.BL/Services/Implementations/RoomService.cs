@@ -77,9 +77,25 @@ public class RoomService : IRoomService
         return listDtos;
     }
 
-    public Task<ICollection<RoomTableDTO>> GetTableItemsAsync(int page = 0, int count = 10)
+    public async Task<ICollection<RoomTableDTO>> GetTableItemsAsync(string q = null, int page = 0, int count = 10)
     {
-        throw new NotImplementedException();
+        var rooms = await _repository.GetAllAsync();
+        var query = rooms.AsQueryable();
+
+        if (!string.IsNullOrEmpty(q))
+        {
+            string normalizedQ = q.Trim().ToLower();
+
+            query = query.Where(r => r.Number.ToString().Contains(normalizedQ) || r.Type.ToString().ToLower().Contains(normalizedQ));
+        }
+
+        query = query.Skip(page * count).Take(count);
+
+        var list = query.ToList();
+
+        var dtos = _mapper.Map<ICollection<RoomTableDTO>>(list);
+
+        return dtos;
     }
 
     public Task<int> SaveChangesAsync()

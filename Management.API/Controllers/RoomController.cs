@@ -86,22 +86,21 @@ namespace Management.API.Controllers
         }
 
         [HttpGet("roomTable")]
-        public async Task<IActionResult> GetTableItems([FromQuery] int page = 0, int count = 10)
+        public async Task<IActionResult> GetTableItems([FromQuery] string? q = null, [FromQuery] int page = 0, [FromQuery] int count = 10)
         {
             try
             {
-                return StatusCode(StatusCodes.Status200OK, await _roomService.GetTableItemsAsync(page, count));
+                var result = await _roomService.GetTableItemsAsync(q, page, count);
+                return StatusCode(StatusCodes.Status200OK, result);
             }
             catch (Exception ex)
             {
                 return StatusCode(StatusCodes.Status500InternalServerError, new
                 {
                     errors = new Dictionary<string, string[]>
-                {
-                    {
-                        "Error", new[] { ex.Message }
-                    }
-                }
+            {
+                { "Error", new[] { ex.Message } }
+            }
                 });
             }
         }

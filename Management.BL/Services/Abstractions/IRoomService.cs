@@ -6,7 +6,7 @@ namespace Management.BL.Services.Abstractions;
 public interface IRoomService
 {
     Task<ICollection<RoomListDTO>> GetListItemsAsync(int page = 0, int count = 0);
-    Task<ICollection<RoomTableDTO>> GetTableItemsAsync(int page = 0, int count = 10);
+    Task<ICollection<RoomTableDTO>> GetTableItemsAsync(string query = null, int page = 0, int count = 10);
     Task<RoomUpdateDTO> GetByIdForUpdateAsync(int id);
     Task<Room> GetByIdAsync(int id);
     Task CreateAsync(RoomCreateDTO dto);
