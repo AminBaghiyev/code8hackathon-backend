@@ -1,5 +1,7 @@
 ﻿using FluentValidation;
 using FluentValidation.AspNetCore;
+using Management.BL.Services.Abstractions;
+using Management.BL.Services.Implementations;
 using Management.BL.Utilities;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
@@ -17,5 +19,6 @@ public static class ConfigurationServices
 
         services.AddScoped<EmailService>();
         services.AddSingleton<JWTService>();
+        services.AddScoped<IReservationService, ReservationService>();
     }
 }
