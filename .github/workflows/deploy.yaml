@@ -1,0 +1,59 @@
+name: Deploy to Production Server
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup .NET 8
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.411'
+
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --configuration Release --no-restore
+
+    - name: Publish
+      run: dotnet publish -c Release -o ./publish --no-restore -p:EnvironmentName=Production
+
+    - name: Deploy with rsync
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      uses: easingthemes/ssh-deploy@v5.0.0
+      with:
+        SSH_PRIVATE_KEY: ${{ secrets.SERVER_SSH_KEY }}
+        REMOTE_HOST: ${{ secrets.SERVER_HOST }}
+        REMOTE_USER: ${{ secrets.SERVER_USER }}
+        SOURCE: "publish/"
+        TARGET: "/var/www/code8hackathon-backend"
+        ARGS: "-rlvog --delete" 
+
+    - name: Set Permissions and Restart Service
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SERVER_HOST }}
+        username: ${{ secrets.SERVER_USER }}
+        key: ${{ secrets.SERVER_SSH_KEY }}
+        script: |
+          sudo chown -R www-data:www-data /var/www/code8hackathon-backend
+          sudo systemctl restart code8hackathon.service

@@ -1,0 +1,21 @@
+﻿using FluentValidation;
+using FluentValidation.AspNetCore;
+using Management.BL.Utilities;
+using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
+
+namespace Management.DL;
+
+public static class ConfigurationServices
+{
+    public static void AddBLServices(this IServiceCollection services)
+    {
+        services.AddAutoMapper(Assembly.GetExecutingAssembly());
+        services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+        services.AddFluentValidationAutoValidation();
+        services.AddFluentValidationClientsideAdapters();
+
+        services.AddScoped<EmailService>();
+        services.AddSingleton<JWTService>();
+    }
+}
