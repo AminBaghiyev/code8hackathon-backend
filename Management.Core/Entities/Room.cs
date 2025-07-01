@@ -9,5 +9,5 @@ public class Room : BaseEntity
     public RoomType Type { get; set; }
     public decimal PricePerNight { get; set; }
     public RoomStatus Status { get; set; }
-    public ICollection<Reservation> Reservations { get; set; }
+    public ICollection<Reservation> Reservations { get; set; } = new List<Reservation>();
 }

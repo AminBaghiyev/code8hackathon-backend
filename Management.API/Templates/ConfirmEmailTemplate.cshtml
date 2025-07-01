@@ -1,6 +1,6 @@
 ﻿﻿﻿@{
-    string fullname = Model.FullName;
-    string resetLink = Model.ResetLink;
+string fullname = Model.FullName;
+string resetLink = Model.ResetLink;
 }
 
 <html>
@@ -61,13 +61,12 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Password Reset Request</h1>
+            <h1>Confirm Email</h1>
         </div>
         <div class="content">
             <p>Hi there, @fullname</p>
-            <p>We received a request to reset your password. Click the button below to reset it:</p>
-            <a href="@resetLink" class="btn">Reset Password</a>
-            <p>If you didn't request a password reset, please ignore this email.</p>
+            <p>Welcome to our hotel. You can complete your registration by clicking the button below:</p>
+            <a href="@resetLink" class="btn">Confirm Email</a>
         </div>
         <div class="footer">
             <p>&copy; @DateTime.Now.Year RoomEaser. All rights reserved.</p>
