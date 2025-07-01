@@ -1,10 +1,9 @@
 ﻿using FluentValidation;
 using Management.Core.Enums;
-using Microsoft.Identity.Client;
 
 namespace Management.BL.DTOs;
 
-public record class RoomCreateDTO
+public record RoomCreateDTO
 {
     public int Number { get; set; }
     public RoomType Type { get; set; }

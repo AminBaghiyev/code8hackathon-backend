@@ -1,153 +1,182 @@
 ﻿using Management.BL.DTOs;
 using Management.BL.Services.Abstractions;
-using Microsoft.AspNetCore.Http;
+using Management.Core.Enums;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Management.API.Controllers
+namespace Management.API.Controllers;
+
+[Route("api/[controller]")]
+[ApiController]
+public class RoomController : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class RoomController : ControllerBase
+    readonly IRoomService _roomService;
+
+    public RoomController(IRoomService roomService)
     {
-        readonly IRoomService _roomService;
+        _roomService = roomService;
+    }
 
-        public RoomController(IRoomService roomService)
+    [Authorize(Roles = "Admin")]
+    [HttpPost("add")]
+    public async Task<IActionResult> Create([FromBody] RoomCreateDTO dto)
+    {
+        try
         {
-            _roomService = roomService;
+            await _roomService.CreateAsync(dto);
+            await _roomService.SaveChangesAsync();
+            return StatusCode(StatusCodes.Status201Created);
         }
-
-        [HttpPost("createRoom")]
-        public async Task<IActionResult> Create([FromBody] RoomCreateDTO dto)
+        catch (Exception ex)
         {
-            try
+            return StatusCode(StatusCodes.Status500InternalServerError, new
             {
-                await _roomService.CreateAsync(dto);
-                await _roomService.SaveChangesAsync();
-                return StatusCode(StatusCodes.Status201Created);
-
-            }
-            catch (Exception ex)
+                errors = new Dictionary<string, string[]>
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new
                 {
-                    errors = new Dictionary<string, string[]>
+                    "Error", new[] { ex.Message }
+                }
+            }
+            });
+        }
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpGet("update/{id}")]
+    public async Task<IActionResult> GetByIdForUpdate(int id)
+    {
+        try
+        {
+            return StatusCode(StatusCodes.Status200OK, await _roomService.GetByIdForUpdateAsync(id));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new
+            {
+                errors = new Dictionary<string, string[]>
+            {
+                {
+                    "Error", new[] { ex.Message }
+                }
+            }
+            });
+        }
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPut("update")]
+    public async Task<IActionResult> Update([FromBody] RoomUpdateDTO dto)
+    {
+        try
+        {
+            await _roomService.UpdateAsync(dto);
+            await _roomService.SaveChangesAsync();
+            return StatusCode(StatusCodes.Status201Created);
+
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new
+            {
+                errors = new Dictionary<string, string[]>
                 {
                     {
                         "Error", new[] { ex.Message }
                     }
                 }
-                });
-            }
+            });
         }
+    }
 
-        [HttpGet("update/{id}")]
-        public async Task<IActionResult> GetByIdForUpdate(int id)
+    [Authorize]
+    [HttpGet("table")]
+    public async Task<IActionResult> GetTableItems([FromQuery] RoomStatus? status = null, RoomType? type = null, string? q = null, int page = 0, int count = 10)
+    {
+        try
         {
-            try
+            var result = await _roomService.GetTableItemsAsync(status, type, q, page, count);
+            return StatusCode(StatusCodes.Status200OK, result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new
             {
-                return StatusCode(StatusCodes.Status200OK, await _roomService.GetByIdForUpdateAsync(id));
-            }
-            catch (Exception ex)
+                errors = new Dictionary<string, string[]>
+        {
+            { "Error", new[] { ex.Message } }
+        }
+            });
+        }
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpPatch("change-status/{id}")]
+    public async Task<IActionResult> ChangeStatus(int id, [FromQuery] RoomStatus status)
+    {
+        try
+        {
+            await _roomService.ChangeRoomStatusAsync(id, status);
+            await _roomService.SaveChangesAsync();
+            return StatusCode(StatusCodes.Status200OK);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new
-                {
-                    errors = new Dictionary<string, string[]>
+                errors = new Dictionary<string, string[]>
                 {
                     {
                         "Error", new[] { ex.Message }
                     }
                 }
-                });
-            }
+            });
         }
+    }
 
-        [HttpPut("updateRoom")]
-        public async Task<IActionResult> Update([FromBody] RoomUpdateDTO dto, int id)
+    [Authorize(Roles = "Admin")]
+    [HttpGet("list")]
+    public async Task<IActionResult> GetListItems([FromQuery] int page = 0, int count = 0)
+    {
+        try
         {
-            try
+            return StatusCode(StatusCodes.Status200OK, await _roomService.GetListItemsAsync(page, count));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new
             {
-                await _roomService.UpdateAsync(dto, id);
-                await _roomService.SaveChangesAsync();
-                return StatusCode(StatusCodes.Status201Created);
-
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new
-                {
-                    errors = new Dictionary<string, string[]>
+                errors = new Dictionary<string, string[]>
                 {
                     {
                         "Error", new[] { ex.Message }
                     }
                 }
-                });
-            }
+            });
         }
+    }
 
-        [HttpGet("roomTable")]
-        public async Task<IActionResult> GetTableItems([FromQuery] string? q = null, [FromQuery] int page = 0, [FromQuery] int count = 10)
+    [Authorize(Roles = "Admin")]
+    [HttpDelete("delete/{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        try
         {
-            try
-            {
-                var result = await _roomService.GetTableItemsAsync(q, page, count);
-                return StatusCode(StatusCodes.Status200OK, result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new
-                {
-                    errors = new Dictionary<string, string[]>
-            {
-                { "Error", new[] { ex.Message } }
-            }
-                });
-            }
+            await _roomService.DeleteAsync(id);
+            await _roomService.SaveChangesAsync();
+            return StatusCode(StatusCodes.Status200OK);
+
         }
-
-        [HttpGet("roomlist")]
-        public async Task<IActionResult> GetListItems([FromQuery] int page = 0, int count = 0)
+        catch (Exception ex)
         {
-            try
+            return StatusCode(StatusCodes.Status500InternalServerError, new
             {
-                return StatusCode(StatusCodes.Status200OK, await _roomService.GetListItemsAsync(page, count));
-            }
-            catch (Exception ex)
+                errors = new Dictionary<string, string[]>
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new
                 {
-                    errors = new Dictionary<string, string[]>
-                {
-                    {
-                        "Error", new[] { ex.Message }
-                    }
+                    "Error", new[] { ex.Message }
                 }
-                });
             }
-        }
-
-        [HttpDelete("deleteRoom/{id}")]
-        public async Task<IActionResult> Delete(int id)
-        {
-            try
-            {
-                await _roomService.DeleteAsync(id);
-                await _roomService.SaveChangesAsync();
-                return StatusCode(StatusCodes.Status201Created);
-
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new
-                {
-                    errors = new Dictionary<string, string[]>
-                {
-                    {
-                        "Error", new[] { ex.Message }
-                    }
-                }
-                });
-            }
+            });
         }
     }
 }

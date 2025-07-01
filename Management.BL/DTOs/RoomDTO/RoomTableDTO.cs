@@ -1,9 +1,8 @@
-﻿using FluentValidation;
-using Management.Core.Enums;
+﻿using Management.Core.Enums;
 
 namespace Management.BL.DTOs;
 
-public record class RoomTableDTO
+public record RoomTableDTO
 {
     public int Number { get; set; }
     public RoomType Type { get; set; }

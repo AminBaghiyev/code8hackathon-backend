@@ -3,7 +3,7 @@ using Management.Core.Enums;
 
 namespace Management.BL.DTOs;
 
-public record class RoomUpdateDTO
+public record RoomUpdateDTO
 {
     public int Id { get; set; }
     public int Number { get; set; }
@@ -12,10 +12,13 @@ public record class RoomUpdateDTO
     public RoomStatus Status { get; set; }
 }
 
-public class RoomUpdateDTOValidator : AbstractValidator<RoomCreateDTO>
+public class RoomUpdateDTOValidator : AbstractValidator<RoomUpdateDTO>
 {
     public RoomUpdateDTOValidator()
     {
+        RuleFor(x => x.Id)
+            .GreaterThan(0).WithMessage("Room number must be greater than 0.");
+
         RuleFor(x => x.Number)
             .GreaterThan(0).WithMessage("Room number must be greater than 0.");
 
