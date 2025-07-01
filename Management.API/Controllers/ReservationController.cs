@@ -1,159 +1,206 @@
 ﻿using Management.BL.DTOs;
 using Management.BL.Services.Abstractions;
-using Management.BL.Services.Implementations;
-using Management.Core.Entities;
-using Management.DL.Repositories.Abstractions;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Management.API.Controllers
+namespace Management.API.Controllers;
+
+[Route("api/[controller]")]
+[ApiController]
+public class ReservationController : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class ReservationController : ControllerBase
+    readonly IReservationService _reservationService;
+
+    public ReservationController(IReservationService reservationService)
     {
-        private readonly IReservationService _reservationService;
+        _reservationService = reservationService;
+    }
 
-        public ReservationController(IReservationService reservationService)
+    [Authorize(Roles = "Admin")]
+    [HttpGet("list")]
+    public async Task<IActionResult> GetListItems([FromQuery] int page = 0, int count = 0)
+    {
+        try
         {
-            _reservationService = reservationService;
+            return StatusCode(StatusCodes.Status200OK, await _reservationService.GetListItemsAsync(page, count));
         }
-        [HttpGet("list")]
-        public async Task<IActionResult> GetListItems([FromQuery] int page = 0, int count = 0)
+        catch (Exception ex)
         {
-            try
+            return StatusCode(StatusCodes.Status500InternalServerError, new
             {
-                return StatusCode(StatusCodes.Status200OK, await _reservationService.GetListItemsAsync(page, count));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new
-                {
-                    errors = new Dictionary<string, string[]>
+                errors = new Dictionary<string, string[]>
                 {
                     {
                         "Error", new[] { ex.Message }
                     }
                 }
-                });
-            }
+            });
         }
+    }
 
-
-        [HttpPut("update")]
-        public async Task<IActionResult> Update([FromBody] ReservationUpdateDTO dto)
+    [Authorize(Roles = "Admin")]
+    [HttpPut("update")]
+    public async Task<IActionResult> Update([FromBody] ReservationUpdateDTO dto)
+    {
+        try
         {
-            try
+            await _reservationService.UpdateAsync(dto);
+            await _reservationService.SaveChangesAsync();
+            return StatusCode(StatusCodes.Status201Created);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new
             {
-                await _reservationService.UpdateAsync(dto);
-                await _reservationService.SaveChangesAsync();
-                return StatusCode(StatusCodes.Status201Created);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new
-                {
-                    errors = new Dictionary<string, string[]>
+                errors = new Dictionary<string, string[]>
                 {
                     {
                         "Error", new[] { ex.Message }
                     }
                 }
-                });
-            }
+            });
         }
+    }
 
-        [HttpPost("createReservation")]
-        public async Task<IActionResult> CreateReservation([FromBody] ReservationCreateDTO dto)
+    [Authorize(Roles = "Admin")]
+    [HttpPost("add")]
+    public async Task<IActionResult> Create([FromBody] ReservationCreateDTO dto)
+    {
+        try
         {
-            try
-            {
-                await _reservationService.CreateRoomReservation(dto);
-                await _reservationService.SaveChangesAsync();
-                return StatusCode(StatusCodes.Status201Created);
+            await _reservationService.CreateRoomReservation(dto);
+            await _reservationService.SaveChangesAsync();
+            return StatusCode(StatusCodes.Status201Created);
 
-            }
-            catch (Exception ex)
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new
             {
-                return StatusCode(StatusCodes.Status500InternalServerError, new
-                {
-                    errors = new Dictionary<string, string[]>
+                errors = new Dictionary<string, string[]>
                 {
                     {
                         "Error", new[] { ex.Message }
                     }
                 }
-                });
-            }
+            });
         }
+    }
 
-        [HttpGet("table")]
-        public async Task<IActionResult> GetReservationsByDateRange(
-                      [FromQuery] DateTime startDate,
-                [FromQuery] DateTime endDate,
-                 [FromQuery] int page = 0,
-               [FromQuery] int count = 10)
+    [Authorize(Roles = "Customer")]
+    [HttpPost("add-reservation")]
+    public async Task<IActionResult> AddReservation([FromBody] ReservationCreateByUserDTO dto)
+    {
+        try
         {
-            try
-            {
-                var result = await _reservationService.GetTableItemsByDateRangeAsync(startDate, endDate, page, count);
-                return Ok(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new
-                {
-                    errors = new Dictionary<string, string[]>
-            {
-                { "Error", new[] { ex.Message } }
-            }
-                });
-            }
+            await _reservationService.CreateRoomReservationByUser(dto);
+            await _reservationService.SaveChangesAsync();
+            return StatusCode(StatusCodes.Status201Created);
+
         }
-
-        [HttpDelete("delete/{id}")]
-        public async Task<IActionResult> Delete(int id)
+        catch (Exception ex)
         {
-            try
+            return StatusCode(StatusCodes.Status500InternalServerError, new
             {
-                await _reservationService.DeleteAsync(id);
-                 await _reservationService.SaveChangesAsync(); 
-                return StatusCode(StatusCodes.Status200OK);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new
-                {
-                    errors = new Dictionary<string, string[]>
+                errors = new Dictionary<string, string[]>
                 {
                     {
                         "Error", new[] { ex.Message }
                     }
                 }
-                });
-            }
+            });
         }
-        [HttpGet("update/{id}")]
-        public async Task<IActionResult> GetByIdForUpdate(int id)
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpGet("table")]
+    public async Task<IActionResult> GetReservationsByDateRange([FromQuery] DateTime startDate, DateTime endDate, int page = 0, int count = 10)
+    {
+        try
         {
-            try
+            var result = await _reservationService.GetTableItemsByDateRangeAsync(startDate, endDate, page, count);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new
             {
-                return StatusCode(StatusCodes.Status200OK, await _reservationService.GetByIdForUpdateAsync(id));
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new
-                {
-                    errors = new Dictionary<string, string[]>
+                errors = new Dictionary<string, string[]>
                 {
                     {
                         "Error", new[] { ex.Message }
                     }
                 }
-                });
-            }
+            });
         }
-       
+    }
+
+    [Authorize(Roles = "Customer")]
+    [HttpGet("my-reservations")]
+    public async Task<IActionResult> GetMyReservationsByDateRange([FromQuery] DateTime startDate, DateTime endDate, int page = 0, int count = 10)
+    {
+        try
+        {
+            var result = await _reservationService.GetReservationsForUser(startDate, endDate, page, count);
+            return Ok(result);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new
+            {
+                errors = new Dictionary<string, string[]>
+                {
+                    {
+                        "Error", new[] { ex.Message }
+                    }
+                }
+            });
+        }
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpDelete("delete/{id}")]
+    public async Task<IActionResult> Delete(int id)
+    {
+        try
+        {
+            await _reservationService.DeleteAsync(id);
+            await _reservationService.SaveChangesAsync(); 
+            return StatusCode(StatusCodes.Status200OK);
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new
+            {
+                errors = new Dictionary<string, string[]>
+                {
+                    {
+                        "Error", new[] { ex.Message }
+                    }
+                }
+            });
+        }
+    }
+
+    [Authorize(Roles = "Admin")]
+    [HttpGet("update/{id}")]
+    public async Task<IActionResult> GetByIdForUpdate(int id)
+    {
+        try
+        {
+            return StatusCode(StatusCodes.Status200OK, await _reservationService.GetByIdForUpdateAsync(id));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(StatusCodes.Status500InternalServerError, new
+            {
+                errors = new Dictionary<string, string[]>
+                {
+                    {
+                        "Error", new[] { ex.Message }
+                    }
+                }
+            });
+        }
     }
 }

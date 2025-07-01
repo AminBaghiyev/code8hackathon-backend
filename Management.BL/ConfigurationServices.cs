@@ -23,5 +23,6 @@ public static class ConfigurationServices
         services.AddScoped<IReservationService, ReservationService>();
         services.AddScoped<IRoomService, RoomService>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IDashboardService, DashboardService>();
     }
 }

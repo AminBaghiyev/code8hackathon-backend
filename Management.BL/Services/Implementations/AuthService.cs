@@ -97,7 +97,7 @@ public class AuthService : IAuthService
 
         IEnumerable<Claim> claims =
         [
-            new Claim(ClaimTypes.Role, Role.Customer.ToString()),
+            new Claim(ClaimTypes.Role, roles.First()),
             new Claim(ClaimTypes.SerialNumber, user.Id),
             new Claim(ClaimTypes.GivenName, user.FullName),
             new Claim(ClaimTypes.Email, user.Email)

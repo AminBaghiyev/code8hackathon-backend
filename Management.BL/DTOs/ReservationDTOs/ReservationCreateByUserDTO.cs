@@ -2,23 +2,18 @@
 
 namespace Management.BL.DTOs;
 
-public record ReservationCreateDTO
+public record ReservationCreateByUserDTO
 {
-    public string CustomerId { get; set; }
     public int RoomId { get; set; }
     public DateTime CheckInDate { get; set; }
     public DateTime CheckOutDate { get; set; }
     public ICollection<ServiceCreateDTO> Services { get; set; }
 }
 
-public class ReservationCreateDTOValidator : AbstractValidator<ReservationCreateDTO>
+public class ReservationCreateByUserDTOValidator : AbstractValidator<ReservationCreateByUserDTO>
 {
-    public ReservationCreateDTOValidator()
+    public ReservationCreateByUserDTOValidator()
     {
-        RuleFor(x => x.CustomerId)
-            .NotEmpty().NotNull().WithMessage("Customer Id is required")
-            .Length(36, 36).WithMessage("Invalid Customer Id");
-
         RuleFor(e => e.RoomId).GreaterThan(0).WithMessage("Id must be natural");
 
         RuleFor(e => e.CheckInDate)
