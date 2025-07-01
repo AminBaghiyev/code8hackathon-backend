@@ -1,6 +1,6 @@
 ﻿﻿﻿@{
 string fullname = Model.FullName;
-string resetUrl = Model.ResetUrl;
+string resetLink = Model.ResetLink;
 }
 
 <html>
@@ -66,7 +66,7 @@ string resetUrl = Model.ResetUrl;
         <div class="content">
             <p>Hi there, @fullname</p>
             <p>Welcome to our hotel. You can complete your registration by clicking the button below:</p>
-            <a href="@resetUrl" class="btn">Confirm Email</a>
+            <a href="@resetLink" class="btn">Confirm Email</a>
         </div>
         <div class="footer">
             <p>&copy; @DateTime.Now.Year RoomEaser. All rights reserved.</p>
