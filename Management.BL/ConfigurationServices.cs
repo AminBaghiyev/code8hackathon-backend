@@ -1,4 +1,4 @@
-﻿using FluentValidation;
+using FluentValidation;
 using FluentValidation.AspNetCore;
 using Management.BL.Services.Abstractions;
 using Management.BL.Services.Implementations;
@@ -19,7 +19,8 @@ public static class ConfigurationServices
 
         services.AddScoped<EmailService>();
         services.AddSingleton<JWTService>();
-
+      
         services.AddScoped<IRoomService, RoomService>();
+        services.AddScoped<IAuthService, AuthService>();
     }
 }
