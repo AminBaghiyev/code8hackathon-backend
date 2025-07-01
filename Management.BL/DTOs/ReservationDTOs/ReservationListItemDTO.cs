@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace Management.BL.DTOs;
 
-namespace Management.BL.DTOs;
-
-public  record ReservationListItemDTO
+public record ReservationListItemDTO
 {
     public int Id { get; set; }
     public string Name { get; set; }
