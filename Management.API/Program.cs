@@ -4,6 +4,7 @@ using Management.DL.Contexts;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
@@ -101,7 +102,12 @@ app.UseSwaggerUI(c =>
 });
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(
+        Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads")),
+    RequestPath = "/api/uploads"
+});
 app.UseAuthentication();
 app.UseAuthorization();
 
