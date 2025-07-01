@@ -16,7 +16,7 @@ public class LoginDTOValidator : AbstractValidator<LoginDTO>
             .EmailAddress().WithMessage("A valid email address is required");
 
         RuleFor(e => e.Password)
-        .NotEmpty().NotNull().WithMessage("Password can't be empty")
-        .MinimumLength(6).WithMessage("Password must contain at least 6 symbols");
+            .NotEmpty().NotNull().WithMessage("Password can't be empty")
+            .MinimumLength(6).WithMessage("Password must contain at least 6 symbols");
     }
 }

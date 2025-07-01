@@ -47,6 +47,7 @@ public class AuthService : IAuthService
         IEnumerable<Claim> claims =
         [
             new Claim(ClaimTypes.Role, Role.Customer.ToString()),
+            new Claim(ClaimTypes.SerialNumber, user.Id),
             new Claim(ClaimTypes.GivenName, user.FullName),
             new Claim(ClaimTypes.Email, user.Email)
         ];
@@ -97,6 +98,7 @@ public class AuthService : IAuthService
         IEnumerable<Claim> claims =
         [
             new Claim(ClaimTypes.Role, Role.Customer.ToString()),
+            new Claim(ClaimTypes.SerialNumber, user.Id),
             new Claim(ClaimTypes.GivenName, user.FullName),
             new Claim(ClaimTypes.Email, user.Email)
         ];
@@ -127,6 +129,39 @@ public class AuthService : IAuthService
         };
     }
 
+    public async Task<ProfileUpdateDTO> GetUpdateProfileAsync()
+    {
+        string userId = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.SerialNumber)?.Value ?? throw new Exception("Unauthorized");
+
+        AppUser user = await _userManager.FindByIdAsync(userId) ?? throw new Exception("User not found");
+
+        return _mapper.Map<ProfileUpdateDTO>(user);
+    }
+
+    public async Task UpdateProfileAsync(ProfileUpdateDTO dto)
+    {
+        string userId = _httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.SerialNumber)?.Value ?? throw new Exception("Unauthorized");
+
+        AppUser user = await _userManager.FindByIdAsync(userId) ?? throw new Exception("User not found");
+
+        if (user.Email != dto.Email)
+        {
+            AppUser? existingUser = await _userManager.FindByEmailAsync(dto.Email);
+            if (existingUser is not null && existingUser.Id != user.Id) throw new Exception("An account already exists with this email");
+        }
+
+        if (user.PhoneNumber != dto.PhoneNumber)
+        {
+            AppUser? existingUser = await _userManager.Users.FirstOrDefaultAsync(u => u.PhoneNumber == dto.PhoneNumber);
+            if (existingUser is not null && existingUser.Id != user.Id) throw new Exception("An account already exists with this phone number");
+        }
+
+        _mapper.Map(dto, user);
+
+        IdentityResult result = await _userManager.UpdateAsync(user);
+        if (!result.Succeeded) throw new Exception("User could not be updated");
+    }
+
     public async Task ConfirmEmailAsync(ConfirmEmailDTO dto)
     {
         AppUser user = await _userManager.FindByEmailAsync(dto.Email) ?? throw new Exception("User not found");
@@ -153,7 +188,16 @@ public class AuthService : IAuthService
 
         if (!await _userManager.CheckPasswordAsync(user, dto.OldPassword)) throw new Exception("Password is wrong");
 
-        IdentityResult result = await _userManager.ResetPasswordAsync(user, dto.Token, dto.Password);
+        IdentityResult result;
+
+        if (!user.EmailConfirmed)
+        {
+            user.EmailConfirmed = true;
+            result = await _userManager.UpdateAsync(user);
+            if (!result.Succeeded) throw new Exception("User info could not be updated");
+        }
+
+        result = await _userManager.ResetPasswordAsync(user, dto.Token, dto.Password);
         if (!result.Succeeded) throw new Exception("An error occurred while saving the password");
     }
 
