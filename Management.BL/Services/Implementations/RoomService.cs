@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Management.BL.DTOs;
 using Management.BL.Services.Abstractions;
+using Management.BL.Utilities;
 using Management.Core.Entities;
 using Management.Core.Enums;
 using Management.DL.Repositories.Abstractions;
@@ -36,6 +37,8 @@ public class RoomService : IRoomService
 
         Room newRoom = _mapper.Map<Room>(dto);
 
+        newRoom.Thumbnail = await dto.File.SaveAsync("rooms");
+
         await _repository.CreateAsync(newRoom);
     }
 
@@ -43,15 +46,20 @@ public class RoomService : IRoomService
     {
         Room? room = await _repository.GetOneAsync(item => item.Id == dto.Id);
         if (room is null) throw new Exception("Room not found.");
+        Room newRoom = _mapper.Map<Room>(dto);
 
-        _mapper.Map(dto, room);
-        _repository.Update(room);
+        newRoom.Thumbnail = dto.File is not null ? await dto.File.SaveAsync("rooms") : room.Thumbnail;
+
+        _repository.Update(newRoom);
+
+        if (dto.File is not null) File.Delete(Path.Combine(Path.GetFullPath("wwwroot"), "uploads", "rooms", room.Thumbnail));
     }
 
     public async Task DeleteAsync(int id)
     {
         Room room = await _repository.GetOneAsync(item => item.Id == id) ?? throw new Exception("Room not found.");
         _repository.Delete(room);
+        File.Delete(Path.Combine(Path.GetFullPath("wwwroot"), "uploads", "rooms", room.Thumbnail));
     }
 
     public async Task<RoomUpdateDTO> GetByIdForUpdateAsync(int id)
