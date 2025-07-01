@@ -19,7 +19,7 @@ public class RoomController : ControllerBase
 
     [Authorize(Roles = "Admin")]
     [HttpPost("add")]
-    public async Task<IActionResult> Create([FromBody] RoomCreateDTO dto)
+    public async Task<IActionResult> Create([FromForm] RoomCreateDTO dto)
     {
         try
         {
@@ -65,7 +65,7 @@ public class RoomController : ControllerBase
 
     [Authorize(Roles = "Admin")]
     [HttpPut("update")]
-    public async Task<IActionResult> Update([FromBody] RoomUpdateDTO dto)
+    public async Task<IActionResult> Update([FromForm] RoomUpdateDTO dto)
     {
         try
         {
@@ -88,7 +88,7 @@ public class RoomController : ControllerBase
         }
     }
 
-    [Authorize]
+    [Authorize(Roles = "Admin,Customer")]
     [HttpGet("table")]
     public async Task<IActionResult> GetTableItems([FromQuery] RoomStatus? status = null, RoomType? type = null, string? q = null, int page = 0, int count = 10)
     {
