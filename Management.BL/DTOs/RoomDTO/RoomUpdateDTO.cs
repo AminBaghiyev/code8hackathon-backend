@@ -1,5 +1,7 @@
 ﻿using FluentValidation;
 using Management.Core.Enums;
+using Microsoft.AspNetCore.Http;
+using Management.BL.Utilities;
 
 namespace Management.BL.DTOs;
 
@@ -10,6 +12,8 @@ public record RoomUpdateDTO
     public RoomType Type { get; set; }
     public decimal PricePerNight { get; set; }
     public RoomStatus Status { get; set; }
+    public IFormFile? File { get; set; }
+    public string Thumbnail { get; set; }
 }
 
 public class RoomUpdateDTOValidator : AbstractValidator<RoomUpdateDTO>
@@ -30,5 +34,8 @@ public class RoomUpdateDTOValidator : AbstractValidator<RoomUpdateDTO>
 
         RuleFor(x => x.Status)
             .IsInEnum().WithMessage("Room status is invalid.");
+
+        RuleFor(e => e.File)
+            .Must(e => e is null || e.CheckType("jpg", "jpeg", "png")).WithMessage("Thumbnail type must be JPG, JPEG, or PNG");
     }
 }

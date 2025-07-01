@@ -17,7 +17,7 @@ public class AuthController : ControllerBase
         _service = service;
     }
 
-    [Authorize]
+    [Authorize(Roles = "Admin,Customer")]
     [HttpGet("me")]
     public IActionResult Me()
     {

@@ -8,5 +8,6 @@ public record RoomTableDTO
     public RoomType Type { get; set; }
     public decimal PricePerNight { get; set; }
     public RoomStatus Status { get; set; }
+    public string Thumbnail { get; set; }
 }
 
