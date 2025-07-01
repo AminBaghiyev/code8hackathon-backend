@@ -17,7 +17,7 @@ public class EmailService
         _env = env;
     }
 
-    public async Task SendChangePasswordAsync(string to, string username, string fullname, string template, string subject, string link)
+    public async Task SendTokenAsync(string to, string fullname, string template, string subject, string link)
     {
         RazorLightEngine engine = new RazorLightEngineBuilder()
             .UseFileSystemProject(Path.Combine(_env.ContentRootPath, "Templates"))
@@ -26,7 +26,7 @@ public class EmailService
 
         string body = await engine.CompileRenderAsync(template, new
         {
-            Username = username,
+            FullName = fullname,
             ResetLink = link
         });
 
@@ -36,7 +36,7 @@ public class EmailService
             EnableSsl = true
         };
 
-        MailAddress from = new(_configuration["Email:Login"], "Management");
+        MailAddress from = new(_configuration["Email:Login"], "RoomEaser");
         MailAddress destination = new(to, fullname);
 
         MailMessage message = new(from, destination)
